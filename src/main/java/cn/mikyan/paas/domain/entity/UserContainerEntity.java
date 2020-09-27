@@ -1,9 +1,13 @@
-package cn.mikyan.paas.entity;
+package cn.mikyan.paas.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import lombok.Data;
@@ -31,6 +35,8 @@ public class UserContainerEntity extends Model<UserContainerEntity> {
      */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
+
+    private String userId;
 
     /**
      * 项目ID
@@ -60,17 +66,24 @@ public class UserContainerEntity extends Model<UserContainerEntity> {
     /**
      * 容器状态
      */
-    private String status;
+    private Integer status;
 
     /**
      * 创建时间
      */
-    private LocalDateTime createDate;
-
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createDate;
     /**
      * 修改时间
      */
-    private LocalDateTime updateDate;
+    @TableField(update = "now()")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date updateDate;
+
+    /**
+     * 环境参数
+     */
+    private String env;
 
 
     @Override

@@ -1,6 +1,6 @@
 package cn.mikyan.paas.service;
 
-import cn.mikyan.paas.entity.SysImageEntity;
+import cn.mikyan.paas.domain.entity.SysImageEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface SysImageService extends IService<SysImageEntity> {
 
+    SysImageEntity getById(String id);
 }

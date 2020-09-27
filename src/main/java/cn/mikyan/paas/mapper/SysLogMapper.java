@@ -1,6 +1,6 @@
 package cn.mikyan.paas.mapper;
 
-import cn.mikyan.paas.entity.SysLogEntity;
+import cn.mikyan.paas.domain.entity.SysLogEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

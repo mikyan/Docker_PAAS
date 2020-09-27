@@ -1,8 +1,9 @@
-package cn.mikyan.paas.entity;
+package cn.mikyan.paas.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import lombok.Data;
@@ -11,7 +12,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 角色表
+ * 项目日志表
  * </p>
  *
  * @author MIKYAN
@@ -20,26 +21,34 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_role")
-public class SysRoleEntity extends Model<SysRoleEntity> {
+@TableName("project_log")
+public class ProjectLogEntity extends Model<ProjectLogEntity> {
 
     private static final long serialVersionUID=1L;
 
-    /**
-     * 角色ID
-     */
-    @TableId(value = "role_id", type = IdType.AUTO)
-    private Integer roleId;
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private String id;
+
+    private String projectId;
+
+    private String objId;
 
     /**
-     * 角色名
+     * 日志类型
      */
-    private String name;
+    private Integer type;
+
+    /**
+     * 描述
+     */
+    private String description;
+
+    private LocalDateTime createDate;
 
 
     @Override
     protected Serializable pkVal() {
-        return this.roleId;
+        return this.id;
     }
 
 }

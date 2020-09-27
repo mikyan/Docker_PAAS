@@ -1,4 +1,4 @@
-package cn.mikyan.paas.entity;
+package cn.mikyan.paas.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -21,8 +21,8 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_log")
-public class SysLogEntity extends Model<SysLogEntity> {
+@TableName("sys_image")
+public class SysImageEntity extends Model<SysImageEntity> {
 
     private static final long serialVersionUID=1L;
 
@@ -30,44 +30,67 @@ public class SysLogEntity extends Model<SysLogEntity> {
     private String id;
 
     /**
-     * 操作用户ID
+     * 镜像ID
      */
-    private Integer userId;
+    private String imageId;
 
     /**
-     * 请求Url
+     * 镜像完整名
      */
-    private String action;
+    private String fullName;
 
     /**
-     * 请求方式
+     * 镜像名
      */
-    private String method;
+    private String name;
 
     /**
-     * 访问IP
+     * TAG
      */
-    private String ip;
+    private String tag;
 
     /**
-     * 用户代理
+     * 所占大小
      */
-    private String userAgent;
+    private String size;
 
     /**
-     * 请求参数
+     * 镜像类型【1：公共镜像；2：用户镜像】
      */
-    private String param;
+    private Boolean type;
 
     /**
-     * 异常
+     * 如果是用户镜像，指明用户ID
      */
-    private String exception;
+    private String userId;
+
+    /**
+     * 如果是用户镜像，是否公开
+     */
+    private Boolean hasOpen;
+
+    private String virtualSize;
+
+    private String labels;
+
+    private String cmd;
+
+    /**
+     * 仓库地址【官方：library】
+     */
+    private String repo;
+
+    private String parentId;
 
     /**
      * 创建时间
      */
     private LocalDateTime createDate;
+
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updateDate;
 
 
     @Override

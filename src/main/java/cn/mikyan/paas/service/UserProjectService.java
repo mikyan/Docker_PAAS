@@ -1,7 +1,8 @@
 package cn.mikyan.paas.service;
 
-import cn.mikyan.paas.entity.UserProjectEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import cn.mikyan.paas.domain.entity.UserProjectEntity;
 
 /**
  * <p>
@@ -12,5 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2020-09-26
  */
 public interface UserProjectService extends IService<UserProjectEntity> {
-
+    
 }

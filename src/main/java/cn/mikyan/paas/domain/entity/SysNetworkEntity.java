@@ -1,4 +1,4 @@
-package cn.mikyan.paas.entity;
+package cn.mikyan.paas.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 登陆表
+ * 系统网络表
  * </p>
  *
  * @author MIKYAN
@@ -21,47 +21,56 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_login")
-public class SysLoginEntity extends Model<SysLoginEntity> {
+@TableName("sys_network")
+public class SysNetworkEntity extends Model<SysNetworkEntity> {
 
     private static final long serialVersionUID=1L;
 
+    /**
+     * 网络ID
+     */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
     /**
-     * 用户名
+     * 网络名
      */
-    private String username;
+    private String name;
 
     /**
-     * 密码
+     * 网络范围
      */
-    private String password;
+    private String scope;
 
     /**
-     * 邮箱
+     * 网络驱动
      */
-    private String email;
+    private String driver;
 
     /**
-     * 是否冻结，默认0
+     * 是否是内部网络
      */
-    private Boolean hasFreeze;
+    private Boolean hasInternal;
 
     /**
-     * 权限id
+     * 是否开启ipv6
      */
-    private Integer roleId;
+    private Boolean hasIpv6;
+
+    private String labels;
 
     /**
-     * 创建时间
+     * 是否是公开网络
      */
+    private Boolean hasPublic;
+
+    /**
+     * 如果不是公开网络，所属用户
+     */
+    private String userId;
+
     private LocalDateTime createDate;
 
-    /**
-     * 更新时间
-     */
     private LocalDateTime updateDate;
 
 

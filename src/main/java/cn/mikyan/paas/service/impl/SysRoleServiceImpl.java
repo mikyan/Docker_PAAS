@@ -1,6 +1,6 @@
 package cn.mikyan.paas.service.impl;
 
-import cn.mikyan.paas.entity.SysRoleEntity;
+import cn.mikyan.paas.domain.entity.SysRoleEntity;
 import cn.mikyan.paas.mapper.SysRoleMapper;
 import cn.mikyan.paas.service.SysRoleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

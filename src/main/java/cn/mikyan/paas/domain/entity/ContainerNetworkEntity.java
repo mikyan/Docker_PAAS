@@ -1,4 +1,4 @@
-package cn.mikyan.paas.entity;
+package cn.mikyan.paas.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -21,24 +21,24 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("persistent_logins")
-public class PersistentLoginsEntity extends Model<PersistentLoginsEntity> {
+@TableName("container_network")
+public class ContainerNetworkEntity extends Model<ContainerNetworkEntity> {
 
     private static final long serialVersionUID=1L;
 
-    private String username;
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private String id;
 
-    @TableId(value = "series", type = IdType.ASSIGN_ID)
-    private String series;
+    private String containerId;
 
-    private String token;
+    private String networkId;
 
-    private LocalDateTime lastUsed;
+    private LocalDateTime createDate;
 
 
     @Override
     protected Serializable pkVal() {
-        return this.series;
+        return this.id;
     }
 
 }

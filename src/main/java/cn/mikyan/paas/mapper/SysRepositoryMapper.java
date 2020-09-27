@@ -1,6 +1,6 @@
 package cn.mikyan.paas.mapper;
 
-import cn.mikyan.paas.entity.SysRepositoryEntity;
+import cn.mikyan.paas.domain.entity.SysRepositoryEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

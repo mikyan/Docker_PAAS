@@ -1,6 +1,6 @@
 package cn.mikyan.paas.service.impl;
 
-import cn.mikyan.paas.entity.SysLogEntity;
+import cn.mikyan.paas.domain.entity.SysLogEntity;
 import cn.mikyan.paas.mapper.SysLogMapper;
 import cn.mikyan.paas.service.SysLogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

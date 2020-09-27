@@ -1,4 +1,4 @@
-package cn.mikyan.paas.entity;
+package cn.mikyan.paas.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 
+ * 仓储镜像
  * </p>
  *
  * @author MIKYAN
@@ -21,8 +21,8 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("user_project")
-public class UserProjectEntity extends Model<UserProjectEntity> {
+@TableName("repository_image")
+public class RepositoryImageEntity extends Model<RepositoryImageEntity> {
 
     private static final long serialVersionUID=1L;
 
@@ -30,28 +30,28 @@ public class UserProjectEntity extends Model<UserProjectEntity> {
     private String id;
 
     /**
+     * 镜像完整名
+     */
+    private String fullName;
+
+    private String name;
+
+    private String tag;
+
+    /**
      * 用户ID
      */
     private String userId;
 
-    /**
-     * 项目名
-     */
-    private String name;
+    private String digest;
 
     /**
-     * 项目描述
+     * 仓储
      */
-    private String description;
+    private String repo;
 
-    /**
-     * 创建时间
-     */
     private LocalDateTime createDate;
 
-    /**
-     * 修改时间
-     */
     private LocalDateTime updateDate;
 
 

@@ -1,6 +1,6 @@
 package cn.mikyan.paas.service;
 
-import cn.mikyan.paas.entity.PersistentLoginsEntity;
+import cn.mikyan.paas.domain.entity.PersistentLoginsEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

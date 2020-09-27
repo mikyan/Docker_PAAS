@@ -1,6 +1,6 @@
 package cn.mikyan.paas.service;
 
-import cn.mikyan.paas.entity.SysRepositoryEntity;
+import cn.mikyan.paas.domain.entity.SysRepositoryEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

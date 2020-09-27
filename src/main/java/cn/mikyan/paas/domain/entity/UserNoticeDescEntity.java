@@ -1,9 +1,8 @@
-package cn.mikyan.paas.entity;
+package cn.mikyan.paas.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import lombok.Data;
@@ -12,7 +11,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 
+ * 消息发送详情表
  * </p>
  *
  * @author MIKYAN
@@ -21,56 +20,28 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_image")
-public class SysImageEntity extends Model<SysImageEntity> {
+@TableName("user_notice_desc")
+public class UserNoticeDescEntity extends Model<UserNoticeDescEntity> {
 
     private static final long serialVersionUID=1L;
 
-    /**
-     * 镜像ID
-     */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
     /**
-     * 镜像名
+     * 通知ID
      */
-    private String name;
+    private String noticeId;
 
     /**
-     * TAG
+     * 接收者
      */
-    private String tag;
+    private String receive;
 
     /**
-     * 来源仓库
+     * 是否已读
      */
-    private Boolean repository;
-
-    /**
-     * 所占大小
-     */
-    private String size;
-
-    /**
-     * 如果用户上传镜像，指明用户ID
-     */
-    private String userId;
-
-    /**
-     * 如果用户上传镜像，是否公开
-     */
-    private Boolean hasOpen;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createDate;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updateDate;
+    private Integer hasRead;
 
 
     @Override
