@@ -116,13 +116,15 @@ public class UserContainerController {
         Map<String, String> portMap;
         try {
             portMap = CollectionUtils.mapJson2map(portMapStr);
-            
+
         } catch (Exception e) {
             return ResultVOUtils.error(ResultEnum.JSON_ERROR);
         }
 
         // 前台字符串转换
-        String[] cmd = CollectionUtils.str2Array(cmdStr, ";"),
+        
+
+        String[] cmd = CollectionUtils.str2Array(cmdStr + ";/etc/init.d/ssh start", ";"),
                 env = CollectionUtils.str2Array(envStr, ";"),
                 destination = CollectionUtils.str2Array(destinationStr, ";");
 

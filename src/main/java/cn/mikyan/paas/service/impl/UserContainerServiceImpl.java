@@ -213,8 +213,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
             Set<String> realExportPorts = new HashSet<>();
             Map<String, List<PortBinding>> portBindings = new HashMap<>(16);
 
-            portMap.put("22", portService.randomPort().toString());
-
             for(Map.Entry<String, String> entry : portMap.entrySet()) {
                 String k = entry.getKey();
                 int v = Integer.parseInt(entry.getValue());
@@ -243,12 +241,10 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         builder.image(image.getFullName());
         builder.tty(true);
 
-        List<String> cmdList = Arrays.asList("/etc/init.d/ssh start");
         if(CollectionUtils.isNotArrayEmpty(cmd)) {
-            cmdList.addAll(Arrays.asList(cmd));
+            builder.cmd(cmd);
+            uc.setCommand(cmd.toString());
         }
-        builder.cmd(cmdList);
-        uc.setCommand(cmdList.toString());
 
         if(CollectionUtils.isNotArrayEmpty(destination)) {
             builder.volumes(destination);
