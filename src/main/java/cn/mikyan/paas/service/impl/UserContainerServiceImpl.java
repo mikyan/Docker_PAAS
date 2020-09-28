@@ -11,6 +11,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.DockerClient;
@@ -24,13 +26,16 @@ import com.spotify.docker.client.messages.ContainerMount;
 import com.spotify.docker.client.messages.ContainerState;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
+import com.spotify.docker.client.messages.TopResults;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cn.mikyan.paas.constant.enums.ContainerOpEnum;
 import cn.mikyan.paas.constant.enums.ContainerStatusEnum;
 import cn.mikyan.paas.constant.enums.ResultEnum;
 import cn.mikyan.paas.constant.enums.VolumeTypeEnum;
@@ -87,6 +92,22 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
     @Value("${redis.container-name.key}")
     private String key;
 
+    /**
+     * 启动状态允许的操作
+     */
+    private List<ContainerOpEnum> allowOpByRunning = Arrays.asList(ContainerOpEnum.PAUSE, ContainerOpEnum.STOP,
+                                                                ContainerOpEnum.KILL, ContainerOpEnum.RESTART);
+    /**
+     * 暂停状态允许的操作
+     */
+    private List<ContainerOpEnum> allowOpByPause = Arrays.asList(ContainerOpEnum.CONTINUE, ContainerOpEnum.STOP,
+            ContainerOpEnum.KILL, ContainerOpEnum.RESTART);
+    /**
+     * 停止状态允许的操作
+     */
+    private List<ContainerOpEnum> allowOpByStop = Arrays.asList(ContainerOpEnum.START, ContainerOpEnum.RESTART,
+            ContainerOpEnum.DELETE);
+
     @Override
     public UserContainerDTO getById(String id) {
         return dtoConvert.convert(userContainerMapper.selectById(id));
@@ -117,12 +138,99 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         return name;
     }
 
+    private boolean checkPorts(List<String> exportPorts, Map<String,String> map) {
+        // 校验NULL
+        if(CollectionUtils.isListEmpty(exportPorts) && map == null) {
+            return true;
+        }
+        if(CollectionUtils.isListNotEmpty(exportPorts) && map == null) {
+            return false;
+        }
+        /*
+         * 如果暴露接口非空
+         * （1）判断暴露接口是否都设置
+         * （2）判断接口是否合法
+         * 如果暴露接口空
+         * （1）判断接口是否合法
+         */
+        if(CollectionUtils.isListNotEmpty(exportPorts)) {
+            for(String port : exportPorts) {
+                System.out.println(map.get(port));
+                if(map.get(port) == null) {
+                    return false;
+                }
+            }
+        }
+        return hasPortIllegal(map);
+    }
+
+    private boolean hasPortIllegal(Map<String,String> map) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            Integer value = Integer.parseInt(entry.getValue());
+
+            // 判断数字
+            try {
+                Integer.parseInt(entry.getKey());
+            } catch (Exception e) {
+                return false;
+            }
+
+            // value允许端口范围：[10000 ~ 65535)
+            if(value < 10000 || value > 65535) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public ResultVO hasAllowOp(String userId, String containerId, ContainerOpEnum containerOpEnum) {
+
+        // 2、判断状态
+        ContainerStatusEnum statusEnum = getStatus(containerId);
+        if (statusEnum == ContainerStatusEnum.RUNNING) {
+            // 运行：暂停、停止、强制停止、重启
+            return allowOpByRunning.contains(containerOpEnum) ? ResultVOUtils.success() : ResultVOUtils.error(ResultEnum.CONTAINER_ALREADY_START);
+        } else if (statusEnum == ContainerStatusEnum.PAUSE) {
+            // 暂停：恢复、停止、强制停止、重启
+            return allowOpByPause.contains(containerOpEnum) ? ResultVOUtils.success() : ResultVOUtils.error(ResultEnum.CONTAINER_ALREADY_PAUSE);
+        } else if (statusEnum == ContainerStatusEnum.STOP) {
+            // 停止：启动、重启、删除
+            return allowOpByStop.contains(containerOpEnum) ? ResultVOUtils.success() : ResultVOUtils.error(ResultEnum.CONTAINER_ALREADY_STOP);
+        } else {
+            return ResultVOUtils.error(ResultEnum.CONTAINER_STATUS_ERROR);
+        }
+    }
+
+    @Override
+    public ResultVO createContainerCheck(String userId, String imageId, Map<String, String> portMap, String projectId) {
+        // 2、校验Image
+        SysImageEntity image = sysImageService.getById(imageId);
+        if(image == null) {
+            return ResultVOUtils.error(ResultEnum.IMAGE_EXCEPTION);
+        }
+
+        // 获取暴露接口
+        ResultVO resultVO = sysImageService.listExportPorts(imageId, userId);
+        System.out.println(resultVO);
+        if(ResultEnum.OK.getCode() != resultVO.getCode()) {
+            return resultVO;
+        }
+        List<String> exportPorts = (List<String>) resultVO.getData();
+        // 3、校验输入的端口
+        if(!checkPorts(exportPorts, portMap)) {
+            return ResultVOUtils.error(ResultEnum.INPUT_PORT_ERROR);
+        }
+
+        return ResultVOUtils.success();
+    }
+
     @Async("taskExecutor")
     @Transactional(rollbackFor = CustomException.class)
     @Override
     public void createContainerTask(String userId, String imageId, String[] cmd, Map<String, String> portMap,
                                     String containerName, String projectId, String[] env, String[] destination,
-                                    HttpServletRequest request) {
+                                    HttpServletRequest request) {                                
         SysImageEntity image = sysImageService.getById(imageId);
         UserContainerEntity uc = new UserContainerEntity();
         HostConfig hostConfig;
@@ -206,7 +314,9 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
                 throw new CustomException(ResultEnum.DOCKER_EXCEPTION.getCode(), "读取容器状态异常");
             }
             uc.setStatus(status.getCode());
-            uc.setCreateDate(new Date());
+            Date date = new Date();
+            uc.setCreateDate(date);
+            uc.setUpdateDate(date);
             userContainerMapper.insert(uc);
 
         } catch (DockerRequestException requestException){
@@ -313,6 +423,46 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
     }
 
     @Override
+    public ResultVO commitContainerCheck(String containerId, String name, String tag, String userId) {
+
+        String fullName = "local/" + userId + "/" + name + ":" + tag;
+        // 判断是否存在
+        if(sysImageService.getByFullName(fullName) != null) {
+            return ResultVOUtils.error(ResultEnum.IMAGE_NAME_AND_TAG_EXIST);
+        }
+
+        return ResultVOUtils.success();
+    }
+
+    @Override
+    public ResultVO topContainer(String userId, String containerId) {
+
+        // 只有启动状态才能查看进程
+        ContainerStatusEnum status = getStatus(containerId);
+        if(status != ContainerStatusEnum.RUNNING) {
+            return ResultVOUtils.error(ResultEnum.CONTAINER_NOT_RUNNING);
+        }
+
+        try {
+            TopResults results = dockerClient.topContainer(containerId);
+            return ResultVOUtils.success(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("查看容器进程出现异常，异常位置：UserContainerServiceImpl.continueContainer()",e);
+            return ResultVOUtils.error(ResultEnum.DOCKER_EXCEPTION);
+        }
+    }
+
+    @Override
+    public Page<UserContainerDTO> listContainerByUserId(String userId, String name, Integer status, Page<UserContainerEntity> page) {
+        List<UserContainerEntity> containers = userContainerMapper.listContainerByUserIdAndNameAndStatus(page, userId, name, status);
+
+        Page<UserContainerDTO> page1 = new Page<>();
+        BeanUtils.copyProperties(page, page1);
+        return page1.setRecords(dtoConvert.convert(containers));
+    }
+
+    @Override
     public ContainerStatusEnum getStatus(String containerId) {
         try {
             ContainerInfo info = dockerClient.inspectContainer(containerId);
@@ -371,6 +521,36 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         }
 
         return ResultVOUtils.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = CustomException.class)
+    public Map<String, Integer> syncStatus(String userId) {
+        // 读取数据库容器列表
+        List<UserContainerEntity> containers;
+
+        //为空时同步所有
+        if(StringUtils.isBlank(userId)) {
+            containers = userContainerMapper.selectList(new QueryWrapper<>());
+        } else{
+            containers = userContainerMapper.selectList(new QueryWrapper<UserContainerEntity>().eq("user_id",userId));
+        }
+
+        int successCount = 0, errorCount = 0;
+        for(UserContainerEntity container : containers) {
+            ResultVO resultVO = changeStatus(container.getId());
+
+            if(ResultEnum.OK.getCode() == resultVO.getCode()) {
+                successCount++;
+            } else {
+                errorCount++;
+            }
+        }
+
+        Map<String, Integer> map =new HashMap<>(16);
+        map.put("success", successCount);
+        map.put("error", errorCount);
+        return map;
     }
 
     private void cleanCache(String id) {

@@ -6,13 +6,11 @@ import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import cn.mikyan.paas.constant.enums.ContainerStatusEnum;
 import cn.mikyan.paas.domain.dto.UserContainerDTO;
-import cn.mikyan.paas.service.SysLoginService;
 import cn.mikyan.paas.domain.entity.UserContainerEntity;
 
 /**
@@ -22,8 +20,6 @@ import cn.mikyan.paas.domain.entity.UserContainerEntity;
  */
 @Component
 public class UserContainerDTOConvert {
-    @Autowired
-    private SysLoginService sysLoginService;
     @Value("${docker.server.address}")
     private String serverIp;
 

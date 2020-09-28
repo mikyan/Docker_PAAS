@@ -7,6 +7,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -17,6 +18,7 @@ import org.apache.ibatis.annotations.Param;
  * @author MIKYAN
  * @since 2020-09-26
  */
+@Mapper
 public interface SysVolumeMapper extends BaseMapper<SysVolumeEntity> {
     
     List<SysVolumeEntity> selectByObjId(@Param("objId") String objId, Page<SysVolumeEntity> page);

@@ -54,6 +54,7 @@ public class PortServiceImpl implements PortService {
         InetAddress theAddress = InetAddress.getByName(host);
         try {
             Socket socket = new Socket(theAddress,port);
+            socket.close();
             flag = true;
         } catch (IOException e) {
             // 异常说明被占用

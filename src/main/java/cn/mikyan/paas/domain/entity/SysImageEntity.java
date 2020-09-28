@@ -3,9 +3,10 @@ package cn.mikyan.paas.domain.entity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+import java.util.Date;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -52,12 +53,12 @@ public class SysImageEntity extends Model<SysImageEntity> {
     /**
      * 所占大小
      */
-    private String size;
+    private long size;
 
     /**
      * 镜像类型【1：公共镜像；2：用户镜像】
      */
-    private Boolean type;
+    private int type;
 
     /**
      * 如果是用户镜像，指明用户ID
@@ -69,7 +70,7 @@ public class SysImageEntity extends Model<SysImageEntity> {
      */
     private Boolean hasOpen;
 
-    private String virtualSize;
+    private long virtualSize;
 
     private String labels;
 
@@ -85,12 +86,12 @@ public class SysImageEntity extends Model<SysImageEntity> {
     /**
      * 创建时间
      */
-    private LocalDateTime createDate;
+    private Date createDate;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateDate;
+    private Date updateDate;
 
 
     @Override

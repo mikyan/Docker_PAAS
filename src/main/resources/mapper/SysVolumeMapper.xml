@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.mikyan.paas.mapper.SysVolumeMapper">
-    <select id="selectByObjId" resultType="jit.edu.paas.domain.entity.SysVolume">
+    <select id="selectByObjId" resultType="cn.mikyan.paas.domain.entity.SysVolumeEntity">
         SELECT * FROM sys_volume
         WHERE  obj_id = #{objId}
     </select>
