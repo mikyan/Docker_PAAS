@@ -36,12 +36,12 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             File oldfile = new File(path + "/" + oldName);
             File newfile = new File(path + "/" + newName);
             if (!oldfile.exists()) {
-                System.out.println("重命名文件失败，" + oldName + "不存在！");
+                //System.out.println("重命名文件失败，" + oldName + "不存在！");
                 return false;
             }
             //若在该目录下已经有一个文件和新文件名相同，则不允许重命名
             if (newfile.exists()) {
-                System.out.println("重命名文件失败，" + newName + "已经存在！");
+                //System.out.println("重命名文件失败，" + newName + "已经存在！");
                 return false;
             } else {
                 oldfile.renameTo(newfile);
@@ -155,7 +155,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         while (names.hasMoreElements()) {
             String key = names.nextElement();
             String val = req.getParameter(key);
-            System.out.println("FormField：k=" + key + "v=" + val);
+            //System.out.println("FormField：k=" + key + "v=" + val);
         }
 
         // 遍历文件参数（即formData的file）

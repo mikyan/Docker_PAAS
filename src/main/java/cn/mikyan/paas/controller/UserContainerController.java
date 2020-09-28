@@ -112,7 +112,7 @@ public class UserContainerController {
             return ResultVOUtils.error(ResultEnum.PARAM_ERROR);
         }
         
-        System.out.println(portMapStr);
+        //System.out.println(portMapStr);
         // 前端传递map字符串
         Map<String, String> portMap;
         try {

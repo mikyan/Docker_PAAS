@@ -91,7 +91,7 @@ public class SysLoginServiceImpl extends ServiceImpl<SysLoginMapper, SysLoginEnt
         if (StringUtils.isBlank(username)) {
             return null;
         }
-        System.out.println("3333333333333333333333333333333333333333");
+        //System.out.println("3333333333333333333333333333333333333333");
         List<SysLoginEntity> list = loginMapper.selectList(new QueryWrapper<SysLoginEntity>().eq("username", username));
         SysLoginEntity first = CollectionUtils.getListFirst(list);
 
@@ -100,7 +100,7 @@ public class SysLoginServiceImpl extends ServiceImpl<SysLoginMapper, SysLoginEnt
             return null;
         }
 
-        System.out.println("3333333333333333333333333333333333333333");
+        //System.out.println("3333333333333333333333333333333333333333");
 
         return first;
     }
@@ -212,8 +212,8 @@ public class SysLoginServiceImpl extends ServiceImpl<SysLoginMapper, SysLoginEnt
         if (login == null) {
             return false;
         }
-        System.out.println(login.getPassword());
-        System.out.println(PasswordUtils.encryptPassword(password));
+        //ln(login.getPassword());
+        //System.out.println(PasswordUtils.encryptPassword(password));
 
         return PasswordUtils.validatePassword(password, login.getPassword());
         //return new BCryptPasswordEncoder().matches(password, login.getPassword());
@@ -229,7 +229,7 @@ public class SysLoginServiceImpl extends ServiceImpl<SysLoginMapper, SysLoginEnt
         // 用户角色默认为User
         sysLoginEntity.setRoleId(RoleEnum.ROLE_USER.getCode());
         Integer i = loginMapper.insert(sysLoginEntity);
-        System.out.println("========================");
+        //System.out.println("========================");
         return i == 1;
     }
 

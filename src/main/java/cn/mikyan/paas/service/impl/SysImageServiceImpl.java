@@ -256,10 +256,10 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
         // 获取端口号
         try {
             ImageInfo info = dockerClient.inspectImage(sysImage.getFullName());
-            System.out.println(info);
+            //System.out.println(info);
             // 形如：["80/tcp"]
             ImmutableSet<String> exposedPorts = info.containerConfig().exposedPorts();
-            System.out.println(exposedPorts);
+            //System.out.println(exposedPorts);
             Set<String> res = new HashSet<>();
 
             // 取出端口号信息

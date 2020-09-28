@@ -117,9 +117,9 @@ public class PasswordUtils {
 
 	public static void main(String[] args) {
 		String encryptPassword = encryptPassword("123");
-		System.out.println(encryptPassword);
+		//System.out.println(encryptPassword);
 		boolean flag = validatePassword("123", encryptPassword);
-		System.out.println(flag);
-		System.out.println(checkStrength("123"));
+		//System.out.println(flag);
+		//System.out.println(checkStrength("123"));
 	}
 }

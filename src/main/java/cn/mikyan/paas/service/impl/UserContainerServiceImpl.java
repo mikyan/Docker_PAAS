@@ -155,7 +155,7 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
          */
         if(CollectionUtils.isListNotEmpty(exportPorts)) {
             for(String port : exportPorts) {
-                System.out.println(map.get(port));
+                //System.out.println(map.get(port));
                 if(map.get(port) == null) {
                     return false;
                 }
@@ -212,7 +212,7 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
 
         // 获取暴露接口
         ResultVO resultVO = sysImageService.listExportPorts(imageId);
-        System.out.println(resultVO);
+        //System.out.println(resultVO);
         if(ResultEnum.OK.getCode() != resultVO.getCode()) {
             return resultVO;
         }
