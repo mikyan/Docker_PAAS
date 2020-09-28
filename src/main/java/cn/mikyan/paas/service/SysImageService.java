@@ -17,17 +17,21 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface SysImageService extends IService<SysImageEntity> {
 
-    ResultVO listExportPorts(String imageId, String userId);
-
     boolean saveImage(String fullName);
-
-    Page<SysImageDTO> listLocalPublicImage(String name, Page<SysImageDTO> page);
 
     ResultVO cleanImage();
 
+    ResultVO inspectImage(String id);
+
+    ResultVO listExportPorts(String imageId);
+
+    Page<SysImageDTO> listPublicImage(String name, Page<SysImageDTO> page);
+
     SysImageEntity getById(String id);
 
-    SysImageEntity getByFullName(String id);
+    SysImageEntity getByFullName(String id); 
 
-    ResultVO inspectImage(String id, String userId);
+    ResultVO sync();
+
+    void cleanCache(String id, String fullName);
 }

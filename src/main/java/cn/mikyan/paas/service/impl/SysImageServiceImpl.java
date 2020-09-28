@@ -1,6 +1,7 @@
 package cn.mikyan.paas.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,21 +12,25 @@ import java.util.Set;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerRequestException;
+import com.spotify.docker.client.exceptions.DockerTimeoutException;
 import com.spotify.docker.client.messages.Image;
 import com.spotify.docker.client.messages.ImageInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import cn.mikyan.paas.constant.enums.ImageTypeEnum;
 import cn.mikyan.paas.constant.enums.ResultEnum;
 import cn.mikyan.paas.domain.dto.SysImageDTO;
 import cn.mikyan.paas.domain.entity.SysImageEntity;
 import cn.mikyan.paas.domain.vo.ResultVO;
+import cn.mikyan.paas.exception.CustomException;
 import cn.mikyan.paas.mapper.SysImageMapper;
 import cn.mikyan.paas.service.SysImageService;
 import cn.mikyan.paas.utils.CollectionUtils;
@@ -62,6 +67,100 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
     private String key;
     private final String ID_PREFIX = "ID:";
     private final String FULL_NAME_PREFIX = "FULL_NAME:";
+
+    /**
+     * 同步本地镜像到数据库
+     * @author jitwxs
+     * @since 2018/7/3 16:38
+     */
+    @Transactional(rollbackFor = CustomException.class)
+    @Override
+    public ResultVO sync() {
+        try {
+            // 1、获取数据库中所有镜像
+            List<SysImageEntity> dbImages = sysImageMapper.selectList(new QueryWrapper<>());
+            // 2、获取本地所有镜像
+            List<Image> tmps = dockerClient.listImages(DockerClient.ListImagesParam.digests());
+
+            int deleteCount = 0,addCount = 0,errorCount=0;
+            boolean[] dbFlag = new boolean[dbImages.size()];
+            Arrays.fill(dbFlag,false);
+
+            // 3、遍历本地镜像
+            for(int i=0; i<tmps.size(); i++) {
+                Image image = tmps.get(i);
+                // 读取所有Tag
+                ImmutableList<String> list = image.repoTags();
+                if(list != null) {
+                    for(String tag : list) {
+                        // 判断tag是否存在
+                        boolean flag = false;
+                        for(int j=0; j<dbImages.size(); j++) {
+                            // 跳过比较过的
+                            if(dbFlag[j]) {
+                                continue;
+                            }
+                            // 比较相等
+                            if(tag.equals(dbImages.get(j).getFullName())) {
+                                flag = true;
+                                dbFlag[j] = true;
+                                break;
+                            }
+                        }
+
+                        // 如果本地不存在，添加到本地
+                        if(!flag) {
+                            SysImageEntity sysImage = imageToSysImage(image, tag);
+                            if(sysImage == null) {
+                                errorCount++;
+                            } else {
+                                addCount++;
+                                sysImageMapper.insert(sysImage);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 删除失效的数据
+            for(int i=0; i<dbFlag.length;i++) {
+                if(!dbFlag[i]) {
+                    deleteCount++;
+                    SysImageEntity sysImage = dbImages.get(i);
+                    sysImageMapper.deleteById(sysImage);
+                    // 更新缓存
+                    cleanCache(sysImage.getId(), sysImage.getFullName());
+                }
+            }
+
+            // 准备结果
+            Map<String, Integer> map = new HashMap<>(16);
+            map.put("delete", deleteCount);
+            map.put("add", addCount);
+            map.put("error", errorCount);
+
+            return ResultVOUtils.success(map);
+        } catch (DockerTimeoutException te) {
+            return ResultVOUtils.error(ResultEnum.DOCKER_TIMEOUT);
+        }  catch (Exception e) {
+            return ResultVOUtils.error(ResultEnum.DOCKER_EXCEPTION);
+        }
+    }
+
+    @Override
+    public void cleanCache(String id, String fullName) {
+        try {
+            if (StringUtils.isNotBlank(id)) {
+                jedisClient.hdel(key, ID_PREFIX + id);
+            }
+            if (StringUtils.isNotBlank(fullName)) {
+                jedisClient.hdel(key, FULL_NAME_PREFIX + fullName);
+            }
+        } catch (Exception e) {
+            //log.error("清理本地镜像缓存失败，错误位置：{}，错误栈：{}",
+            //        "SysImageServiceImpl.cleanCache()", HttpClientUtils.getStackTraceAsString(e));
+        }
+    }
 
     @Override
     public boolean saveImage(String fullName) {
@@ -148,7 +247,7 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
     }
 
     @Override
-    public ResultVO listExportPorts(String imageId, String userId) {
+    public ResultVO listExportPorts(String imageId) {
         SysImageEntity sysImage = getById(imageId);
         if(sysImage == null) {
             return ResultVOUtils.error(ResultEnum.IMAGE_NOT_EXIST);
@@ -231,7 +330,7 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
     }
 
     @Override
-    public Page<SysImageDTO> listLocalPublicImage(String name, Page<SysImageDTO> page) {
+    public Page<SysImageDTO> listPublicImage(String name, Page<SysImageDTO> page) {
         return page.setRecords(sysImageMapper.listPublicImage(page, name));
     }
 
@@ -318,7 +417,7 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
      * @since 2018/6/28 16:15
      */
     @Override
-    public ResultVO inspectImage(String id, String userId) {
+    public ResultVO inspectImage(String id) {
         // 1、校验参数
         if(StringUtils.isBlank(id)) {
             return ResultVOUtils.error(ResultEnum.PARAM_ERROR);

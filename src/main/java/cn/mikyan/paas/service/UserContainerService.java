@@ -60,8 +60,6 @@ public interface UserContainerService extends IService<UserContainerEntity> {
 
     void continueContainerTask(String userId, String containerId);
 
-    ResultVO commitContainerCheck(String containerId, String name, String tag, String userId);
-
     ResultVO topContainer(String userId, String containerId);
     
 }

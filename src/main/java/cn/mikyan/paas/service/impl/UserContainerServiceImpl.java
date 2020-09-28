@@ -211,7 +211,7 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         }
 
         // 获取暴露接口
-        ResultVO resultVO = sysImageService.listExportPorts(imageId, userId);
+        ResultVO resultVO = sysImageService.listExportPorts(imageId);
         System.out.println(resultVO);
         if(ResultEnum.OK.getCode() != resultVO.getCode()) {
             return resultVO;
@@ -420,18 +420,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         } catch (Exception e) {
             log.error("继续容器出现异常，异常位置：UserContainerServiceImpl.continueContainerTask()，错误栈：{}",e);
         }
-    }
-
-    @Override
-    public ResultVO commitContainerCheck(String containerId, String name, String tag, String userId) {
-
-        String fullName = "local/" + userId + "/" + name + ":" + tag;
-        // 判断是否存在
-        if(sysImageService.getByFullName(fullName) != null) {
-            return ResultVOUtils.error(ResultEnum.IMAGE_NAME_AND_TAG_EXIST);
-        }
-
-        return ResultVOUtils.success();
     }
 
     @Override
