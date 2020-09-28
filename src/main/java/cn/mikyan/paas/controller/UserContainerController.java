@@ -97,18 +97,17 @@ public class UserContainerController {
      *
      * @param imageId        镜像ID 必填
      * @param containerName  容器名 必填
-     * @param projectId      所属项目 必填
      * @param portMapStr     端口映射，Map<String,String> JSON字符串
      * @param cmdStr         执行命令，如若为空，使用默认的命令，多个分号连接
      * @param envStr         环境变量，多个分号连接
      * @param destinationStr 容器内部目录，多个分号连接
      */
     @PostMapping("/create")
-    public ResultVO createContainer(String imageId, String containerName, String projectId,
+    public ResultVO createContainer(String imageId, String containerName, 
                                     String portMapStr, String cmdStr, String envStr, String destinationStr,
                                     String uid, HttpServletRequest request) {
         // 输入验证
-        if (StringUtils.isBlank(imageId, containerName, projectId)) {
+        if (StringUtils.isBlank(imageId, containerName)) {
             return ResultVOUtils.error(ResultEnum.PARAM_ERROR);
         }
 
@@ -126,11 +125,11 @@ public class UserContainerController {
                 destination = CollectionUtils.str2Array(destinationStr, ";");
 
         // 创建校验
-        ResultVO resultVO = containerService.createContainerCheck(uid, imageId, portMap, projectId);
+        ResultVO resultVO = containerService.createContainerCheck(uid, imageId, portMap);
         if (ResultEnum.OK.getCode() != resultVO.getCode()) {
             return resultVO;
         } else {
-            containerService.createContainerTask(uid, imageId, cmd, portMap, containerName, projectId, env, destination, request);
+            containerService.createContainerTask(uid, imageId, cmd, portMap, containerName, env, destination, request);
             return ResultVOUtils.success("开始创建容器");
         }
     }

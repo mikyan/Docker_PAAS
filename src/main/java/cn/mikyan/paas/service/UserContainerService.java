@@ -32,10 +32,10 @@ public interface UserContainerService extends IService<UserContainerEntity> {
     ResultVO hasAllowOp(String userId, String containerId, ContainerOpEnum containerOpEnum);
 
     ResultVO createContainerCheck(String userId, String imageId,
-                                         Map<String, String> portMap, String projectId);
+                                         Map<String, String> portMap);
 
     void createContainerTask(String userId, String imageId, String[] cmd, Map<String, String> portMap,
-                             String containerName, String projectId, String[] env, String[]destination,
+                             String containerName, String[] env, String[]destination,
                              HttpServletRequest request);
 
     void startContainerTask(String userId, String containerId);
