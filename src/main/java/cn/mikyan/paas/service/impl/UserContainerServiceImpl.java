@@ -203,7 +203,7 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
     }
 
     @Override
-    public ResultVO createContainerCheck(String userId, String imageId, Map<String, String> portMap, String projectId) {
+    public ResultVO createContainerCheck(String userId, String imageId, Map<String, String> portMap) {
         // 2、校验Image
         SysImageEntity image = sysImageService.getById(imageId);
         if(image == null) {
@@ -211,7 +211,7 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         }
 
         // 获取暴露接口
-        ResultVO resultVO = sysImageService.listExportPorts(imageId, userId);
+        ResultVO resultVO = sysImageService.listExportPorts(imageId);
         System.out.println(resultVO);
         if(ResultEnum.OK.getCode() != resultVO.getCode()) {
             return resultVO;
@@ -229,7 +229,7 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
     @Transactional(rollbackFor = CustomException.class)
     @Override
     public void createContainerTask(String userId, String imageId, String[] cmd, Map<String, String> portMap,
-                                    String containerName, String projectId, String[] env, String[] destination,
+                                    String containerName, String[] env, String[] destination,
                                     HttpServletRequest request) {                                
         SysImageEntity image = sysImageService.getById(imageId);
         UserContainerEntity uc = new UserContainerEntity();
@@ -288,7 +288,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
             uc.setId(creation.id());
             // 仅存在于数据库，不代表实际容器名
             uc.setName(containerName);
-            uc.setProjectId(projectId);
             uc.setUserId(userId);
             uc.setImage(image.getFullName());
 
@@ -420,18 +419,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         } catch (Exception e) {
             log.error("继续容器出现异常，异常位置：UserContainerServiceImpl.continueContainerTask()，错误栈：{}",e);
         }
-    }
-
-    @Override
-    public ResultVO commitContainerCheck(String containerId, String name, String tag, String userId) {
-
-        String fullName = "local/" + userId + "/" + name + ":" + tag;
-        // 判断是否存在
-        if(sysImageService.getByFullName(fullName) != null) {
-            return ResultVOUtils.error(ResultEnum.IMAGE_NAME_AND_TAG_EXIST);
-        }
-
-        return ResultVOUtils.success();
     }
 
     @Override

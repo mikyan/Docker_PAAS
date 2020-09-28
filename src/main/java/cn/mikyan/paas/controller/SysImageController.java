@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,9 +18,6 @@ import cn.mikyan.paas.utils.ResultVOUtils;
 
 /**
  * 镜像Controller
- *
- * @author jitwxs
- * @since 2018/6/28 14:27
  */
 @RestController
 @RequestMapping("/image")
@@ -32,32 +28,42 @@ public class SysImageController {
 
     /**
      * 查找镜像
-     * @author jitwxs
-     * @since 2018/7/3 15:46
      */
     @GetMapping("/list")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
-    public ResultVO searchLocalImage(String uid,  String name,
-                                     @RequestParam(defaultValue = "1") Integer current,
+    public ResultVO searchLocalImage(String name, @RequestParam(defaultValue = "1") Integer current,
                                      @RequestParam(defaultValue = "10") Integer size) {
                                          
         Page<SysImageDTO> page = new Page<SysImageDTO>(current, size).addOrder(OrderItem.desc("create_date"));
-        return ResultVOUtils.success(imageService.listLocalPublicImage(name, page));
+        return ResultVOUtils.success(imageService.listPublicImage(name, page));
+    }
+
+    /**
+     * 查询镜像的详细信息
+     * 注：只能查询本地镜像
+     */
+    @GetMapping("/inspect/{id}")
+    public ResultVO imageInspect(@PathVariable String id) {
+        return imageService.inspectImage(id);
+    }
+
+    /**
+     * 本地镜像同步
+     * 同步本地镜像和数据库信息
+     */
+    @GetMapping("/sync")
+    public ResultVO syncLocalImage() {
+        return imageService.sync();
     }
 
     /**
      * 获取镜像所有暴露接口
-     * @author jitwxs
-     * @since 2018/7/7 15:50
      */
     @GetMapping("/{id}/exportPort")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO listExportPort(String uid, @PathVariable String id) {
-        return imageService.listExportPorts(id, uid);
+        return imageService.listExportPorts(id);
     }
 
     @GetMapping("/clean")
-    //@PreAuthorize("hasRole('ROLE_SYSTEM')")
     public ResultVO cleanImage() {
         return imageService.cleanImage();
     }

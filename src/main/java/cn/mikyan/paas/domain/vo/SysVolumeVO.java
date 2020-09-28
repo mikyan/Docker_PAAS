@@ -11,6 +11,7 @@ import lombok.Data;
  */
 @Data
 public class SysVolumeVO extends SysVolumeEntity {
+    
     private String typeName;
 
     private String objName;

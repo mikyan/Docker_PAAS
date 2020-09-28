@@ -10,29 +10,25 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import cn.mikyan.paas.constant.enums.ContainerOpEnum;
 import cn.mikyan.paas.constant.enums.ContainerStatusEnum;
 import cn.mikyan.paas.constant.enums.ResultEnum;
 import cn.mikyan.paas.domain.dto.UserContainerDTO;
+import cn.mikyan.paas.domain.entity.UserContainerEntity;
 import cn.mikyan.paas.domain.vo.ResultVO;
 import cn.mikyan.paas.service.UserContainerService;
 import cn.mikyan.paas.utils.CollectionUtils;
 import cn.mikyan.paas.utils.JsonUtils;
 import cn.mikyan.paas.utils.ResultVOUtils;
 import cn.mikyan.paas.utils.StringUtils;
-import cn.mikyan.paas.domain.entity.UserContainerEntity;
-import cn.mikyan.paas.constant.enums.ContainerOpEnum;
 
 /**
  * <p>
@@ -60,13 +56,9 @@ public class UserContainerController {
 
     /**
      * 获取容器
-     *
-     * @author jitwxs
-     * @since 2018/7/9 22:59
      */
 
     @GetMapping("/{id}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO getById(String uid, @PathVariable String id) {
         UserContainerDTO containerDTO = containerService.getById(id);
 
@@ -75,12 +67,8 @@ public class UserContainerController {
 
     /**
      * 获取容器状态（包含状态同步）
-     *
-     * @author jitwxs
-     * @since 2018/7/13 14:34
      */
     @GetMapping("/status/{id}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO getStatus(@PathVariable String id) {
         ContainerStatusEnum status = containerService.getStatus(id);
 
@@ -92,11 +80,8 @@ public class UserContainerController {
      * 普通用户获取本人容器，系统管理员获取所有容器
      *
      * @param name 容器名
-     * @author jitwxs
-     * @since 2018/7/9 11:19
      */
     @GetMapping("/list")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO listContainer(String uid, String name, Integer status,  @RequestParam(defaultValue = "1") Integer current,
                                   @RequestParam(defaultValue = "10") Integer size) {
 
@@ -113,17 +98,13 @@ public class UserContainerController {
      *
      * @param imageId        镜像ID 必填
      * @param containerName  容器名 必填
-     * @param projectId      所属项目 必填
      * @param portMapStr     端口映射，Map<String,String> JSON字符串
      * @param cmdStr         执行命令，如若为空，使用默认的命令，多个分号连接
      * @param envStr         环境变量，多个分号连接
      * @param destinationStr 容器内部目录，多个分号连接
-     * @author jitwxs
-     * @since 2018/7/1 15:52
      */
     @PostMapping("/create")
-    //@PreAuthorize("hasRole('ROLE_USER')")
-    public ResultVO createContainer(String imageId, String containerName, String projectId,
+    public ResultVO createContainer(String imageId, String containerName, 
                                     String portMapStr, String cmdStr, String envStr, String destinationStr,
                                     String uid, HttpServletRequest request) {
         // 输入验证
@@ -146,11 +127,11 @@ public class UserContainerController {
                 destination = CollectionUtils.str2Array(destinationStr, ";");
 
         // 创建校验
-        ResultVO resultVO = containerService.createContainerCheck(uid, imageId, portMap, projectId);
+        ResultVO resultVO = containerService.createContainerCheck(uid, imageId, portMap);
         if (ResultEnum.OK.getCode() != resultVO.getCode()) {
             return resultVO;
         } else {
-            containerService.createContainerTask(uid, imageId, cmd, portMap, containerName, projectId, env, destination, request);
+            containerService.createContainerTask(uid, imageId, cmd, portMap, containerName, env, destination, request);
             return ResultVOUtils.success("开始创建容器");
         }
     }
@@ -158,12 +139,8 @@ public class UserContainerController {
 
     /**
      * 开启容器【WebSocket】
-     *
-     * @author jitwxs
-     * @since 2018/7/1 15:39
      */
     @GetMapping("/start/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO startContainer(String uid, @PathVariable String containerId) {
         ResultVO resultVO = containerService.hasAllowOp(uid, containerId, ContainerOpEnum.START);
 
@@ -177,12 +154,8 @@ public class UserContainerController {
 
     /**
      * 暂停容器【WebSocket】
-     *
-     * @author jitwxs
-     * @since 2018/7/1 16:07
      */
     @GetMapping("/pause/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO pauseContainer(String uid, @PathVariable String containerId) {
         ResultVO resultVO = containerService.hasAllowOp(uid, containerId, ContainerOpEnum.PAUSE);
 
@@ -196,12 +169,8 @@ public class UserContainerController {
 
     /**
      * 把容器从暂停状态恢复【WebSocket】
-     *
-     * @author jitwxs
-     * @since 2018/7/1 16:09
      */
     @GetMapping("/continue/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO continueContainer(String uid, @PathVariable String containerId) {
         ResultVO resultVO = containerService.hasAllowOp(uid, containerId, ContainerOpEnum.CONTINUE);
 
@@ -215,12 +184,8 @@ public class UserContainerController {
 
     /**
      * 停止容器【WebSocket】
-     *
-     * @author jitwxs
-     * @since 2018/7/1 15:59
      */
     @GetMapping("/stop/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO stopContainer(String uid, @PathVariable String containerId) {
         ResultVO resultVO = containerService.hasAllowOp(uid, containerId, ContainerOpEnum.STOP);
 
@@ -234,12 +199,8 @@ public class UserContainerController {
 
     /**
      * 强制停止容器【WebSocket】
-     *
-     * @author jitwxs
-     * @since 2018/7/1 16:02
      */
     @GetMapping("/kill/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO killContainer(String uid, @PathVariable String containerId) {
         ResultVO resultVO = containerService.hasAllowOp(uid, containerId, ContainerOpEnum.KILL);
 
@@ -253,12 +214,8 @@ public class UserContainerController {
 
     /**
      * 重启容器【WebSocket】
-     *
-     * @author jitwxs
-     * @since 2018/7/1 16:02
      */
     @GetMapping("/restart/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO restartContainer(String uid, @PathVariable String containerId) {
         ResultVO resultVO = containerService.hasAllowOp(uid, containerId, ContainerOpEnum.RESTART);
 
@@ -272,24 +229,16 @@ public class UserContainerController {
 
     /**
      * 获取运行容器的内部状态
-     *
-     * @author jitwxs
-     * @since 2018/7/1 16:12
      */
     @GetMapping("/top/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO topContainer(String uid, @PathVariable String containerId) {
         return containerService.topContainer(uid, containerId);
     }
 
     /**
      * 删除容器【WebSocket】
-     *
-     * @author jitwxs
-     * @since 2018/7/1 16:05
      */
     @DeleteMapping("/delete/{containerId}")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO removeContainer(@PathVariable String containerId, String uid, HttpServletRequest request) {
         ResultVO resultVO = containerService.hasAllowOp(uid, containerId, ContainerOpEnum.DELETE);
 
@@ -305,11 +254,8 @@ public class UserContainerController {
      * 调用终端
      *
      * @param containerId 容器ID
-     * @author jitwxs
-     * @since 2018/7/1 14:35
      */
     @PostMapping("/terminal")
-    //@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_SYSTEM')")
     public ResultVO showTerminal(String uid, String containerId,
                                  @RequestParam(defaultValue = "false") Boolean cursorBlink,
                                  @RequestParam(defaultValue = "100") Integer cols,
