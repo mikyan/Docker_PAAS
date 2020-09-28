@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.ContainerNotFoundException;
 import com.spotify.docker.client.exceptions.DockerRequestException;
@@ -22,7 +21,6 @@ import com.spotify.docker.client.exceptions.DockerTimeoutException;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.ContainerMount;
 import com.spotify.docker.client.messages.ContainerState;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
@@ -38,15 +36,12 @@ import org.springframework.transaction.annotation.Transactional;
 import cn.mikyan.paas.constant.enums.ContainerOpEnum;
 import cn.mikyan.paas.constant.enums.ContainerStatusEnum;
 import cn.mikyan.paas.constant.enums.ResultEnum;
-import cn.mikyan.paas.constant.enums.VolumeTypeEnum;
 import cn.mikyan.paas.convert.UserContainerDTOConvert;
 import cn.mikyan.paas.domain.dto.UserContainerDTO;
 import cn.mikyan.paas.domain.entity.SysImageEntity;
-import cn.mikyan.paas.domain.entity.SysVolumeEntity;
 import cn.mikyan.paas.domain.entity.UserContainerEntity;
 import cn.mikyan.paas.domain.vo.ResultVO;
 import cn.mikyan.paas.exception.CustomException;
-import cn.mikyan.paas.mapper.SysVolumeMapper;
 import cn.mikyan.paas.mapper.UserContainerMapper;
 import cn.mikyan.paas.service.PortService;
 import cn.mikyan.paas.service.SysImageService;
@@ -79,9 +74,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
 
     @Autowired
     private SysImageService sysImageService;
-
-    @Autowired
-    private SysVolumeMapper sysVolumeMapper;
 
     @Autowired
     private UserContainerMapper userContainerMapper;
@@ -291,22 +283,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
             uc.setUserId(userId);
             uc.setImage(image.getFullName());
 
-            if(CollectionUtils.isNotArrayEmpty(destination)) {
-                // 为数据库中的sysvolumes插入
-                ImmutableList<ContainerMount> info = dockerClient.inspectContainer(creation.id()).mounts();
-                if(CollectionUtils.isListNotEmpty(info)) {
-                    for(ContainerMount mount : info) {
-                        SysVolumeEntity sysVolume = new SysVolumeEntity();
-                        sysVolume.setObjId(creation.id());
-                        sysVolume.setDestination(mount.destination());
-                        sysVolume.setName(mount.name());
-                        sysVolume.setSource(mount.source());
-                        sysVolume.setType(VolumeTypeEnum.CONTAINER.getCode());
-                        sysVolumeMapper.insert(sysVolume);
-                    }
-                }
-            }
-
             // 3、设置状态
             ContainerStatusEnum status = getStatus(creation.id());
             if(status == null) {
@@ -371,8 +347,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
             dockerClient.removeContainer(containerId);
             // 删除数据
             userContainerMapper.deleteById(containerId);
-            // 删除数据卷
-            sysVolumeMapper.deleteByObjId(containerId);
             // 清理缓存
             cleanCache(containerId);
         } catch (Exception e) {
