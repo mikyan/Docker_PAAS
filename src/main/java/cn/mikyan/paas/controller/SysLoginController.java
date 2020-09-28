@@ -1,6 +1,7 @@
 package cn.mikyan.paas.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -78,6 +79,13 @@ public class SysLoginController {
         SysLoginEntity sysLoginEntity = new SysLoginEntity(username,password);
         loginService.save(sysLoginEntity);
         //id应该是会自动生成,待测试
+        
+		return ResultVOUtils.success();
+    }
+
+    @GetMapping("/logout")
+    public ResultVO logout() {
+        
         
 		return ResultVOUtils.success();
     }
