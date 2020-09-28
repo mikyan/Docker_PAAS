@@ -50,7 +50,6 @@ import cn.mikyan.paas.utils.CollectionUtils;
 import cn.mikyan.paas.utils.JsonUtils;
 import cn.mikyan.paas.utils.ResultVOUtils;
 import cn.mikyan.paas.utils.StringUtils;
-import cn.mikyan.paas.utils.jedis.JedisClient;
 
 /**
  * <p>
@@ -62,9 +61,6 @@ import cn.mikyan.paas.utils.jedis.JedisClient;
  */
 @Service
 public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, UserContainerEntity> implements UserContainerService {
-
-    @Autowired
-    private JedisClient jedisClient;
 
     @Autowired
     private DockerClient dockerClient;
@@ -80,9 +76,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
 
     @Autowired
     private UserContainerDTOConvert dtoConvert;
-
-    @Value("${redis.container-name.key}")
-    private String key;
 
     /**
      * 启动状态允许的操作
@@ -107,24 +100,10 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
 
     @Override
     public String getName(String id) {
-        try {
-            String name = jedisClient.hget(key, id);
-            if(StringUtils.isNotBlank(name)) {
-                return name;
-            }
-        } catch (Exception e) {
-            log.error("缓存读取异常，异常位置：UserContainerServiceImpl.getName()", e);
-        }
 
         String name = getById(id).getName();
         if(StringUtils.isBlank(name)) {
             return name;
-        }
-
-        try {
-            jedisClient.hset(key,id,name);
-        } catch (Exception e) {
-            log.error("缓存存储异常，异常位置：UserContainerServiceImpl.getName()", e);
         }
 
         return name;
@@ -353,8 +332,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
             dockerClient.removeContainer(containerId);
             // 删除数据
             userContainerMapper.deleteById(containerId);
-            // 清理缓存
-            cleanCache(containerId);
         } catch (Exception e) {
             log.error("删除容器出现异常，异常位置：UserContainerServiceImpl.removeContainerTask()", e);
         }
@@ -518,14 +495,6 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         map.put("success", successCount);
         map.put("error", errorCount);
         return map;
-    }
-
-    private void cleanCache(String id) {
-        try {
-            jedisClient.hdel(key, id);
-        } catch (Exception e) {
-            log.error("删除缓存出现异常，异常位置：UserContainerServiceImpl.cleanCache", e);
-        }
     }
 
 }

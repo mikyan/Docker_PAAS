@@ -88,13 +88,6 @@
             <version>2.2</version>
         </dependency>
 
-        <!-- Redis -->
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>2.9.0</version>
-        </dependency>
-
         <!-- HTPP -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

@@ -42,50 +42,9 @@ public class SysLoginServiceImpl extends ServiceImpl<SysLoginMapper, SysLoginEnt
     @Autowired
     private SysLoginMapper loginMapper;
 
-
-    // @Autowired
-    // private TemplateEngine templateEngine;
-
-    @Autowired
-    private HttpServletRequest request;
-
-
-    private final String ID_PREFIX = "ID:";
-    private final String USERNAME_PREFIX = "NAME:";
-    private final String EMAIL_PREFIX = "EMAIL:";
-
-
     @Value("${server.addr}")
     private String serverIp;
 
-    // @Override
-    // public SysLoginEntity getById(String id) {
-    //     String field = ID_PREFIX + id;
-    //     try {
-    //         String res = jedisClient.hget(key, field);
-    //         if (StringUtils.isNotBlank(res)) {
-    //             return JsonUtils.jsonToObject(res, SysLoginEntity.class);
-    //         }
-    //     } catch (Exception e) {
-    //         log.error("缓存读取异常，错误位置：SysLoginServiceImpl.getById()");
-    //     }
-
-    //     SysLoginEntity login = loginMapper.selectById(id);
-    //     // 如果用户不存在，跳过缓存
-    //     if (login == null) {
-    //         return null;
-    //     }
-
-    //     try {
-    //         jedisClient.hset(key, field, JsonUtils.objectToJson(login));
-    //     } catch (Exception e) {
-    //         log.error("缓存存储异常，错误位置：SysLoginServiceImpl.getById()");
-    //     }
-
-    //     return login;
-    // }
-
-    
     @Override
     public SysLoginEntity getByUsername(String username) {
         if (StringUtils.isBlank(username)) {
@@ -104,101 +63,6 @@ public class SysLoginServiceImpl extends ServiceImpl<SysLoginMapper, SysLoginEnt
 
         return first;
     }
-
-    // /**
-    //  * 根据用户名查找
-    //  *
-    //  * @author jitwxs
-    //  * @since 2018/6/29 15:35
-    //  */
-    // @Override
-    // public SysLoginEntity getByUsername_old(String username) {
-    //     if (StringUtils.isBlank(username)) {
-    //         return null;
-    //     }
-
-    //     String field = USERNAME_PREFIX + username;
-    //     try {
-    //         String res = jedisClient.hget(key, field);
-    //         if (StringUtils.isNotBlank(res)) {
-    //             return JsonUtils.jsonToObject(res, SysLoginEntity.class);
-    //         }
-    //     } catch (Exception e) {
-    //         log.error("缓存读取异常，错误位置：SysLoginServiceImpl.getByUsername()");
-    //     }
-
-    //     List<SysLoginEntity> list = loginMapper.selectList(new EntityWrapper<SysLoginEntity>().eq("username", username));
-    //     SysLoginEntity first = CollectionUtils.getListFirst(list);
-
-    //     // 如果用户不存在，跳过缓存
-    //     if (first == null) {
-    //         return null;
-    //     }
-
-    //     try {
-    //         jedisClient.hset(key, field, JsonUtils.objectToJson(first));
-    //     } catch (Exception e) {
-    //         log.error("缓存存储异常，错误位置：SysLoginServiceImpl.getByUsername()");
-    //     }
-
-    //     return first;
-    // }
-
-    // @Override
-    // public SysLoginEntity getByUsername(String username) {
-    //     if (StringUtils.isBlank(username)) {
-    //         return null;
-    //     }
-
-    //     List<SysLoginEntity> list = loginMapper.selectList(new EntityWrapper<SysLoginEntity>().eq("username", username));
-    //     SysLoginEntity first = CollectionUtils.getListFirst(list);
-
-    //     // 如果用户不存在，跳过缓存
-    //     if (first == null) {
-    //         return null;
-    //     }
-
-    //     return first;
-    // }
-
-    /**
-     * 根据邮箱查找
-     *
-     * @author jitwxs
-     * @since 2018/6/29 15:35
-     */
-    // @Override
-    // public SysLoginEntity getByEmail(String email) {
-    //     if (StringUtils.isBlank(email)) {
-    //         return null;
-    //     }
-
-    //     String field = EMAIL_PREFIX + email;
-    //     try {
-    //         String res = jedisClient.hget(key, field);
-    //         if (StringUtils.isNotBlank(res)) {
-    //             return JsonUtils.jsonToObject(res, SysLoginEntity.class);
-    //         }
-    //     } catch (Exception e) {
-    //         log.error("缓存读取异常，错误位置：SysLoginServiceImpl.getByEmail()");
-    //     }
-
-    //     List<SysLoginEntity> list = loginMapper.selectList(new EntityWrapper<SysLoginEntity>().eq("email", email));
-    //     SysLoginEntity first = CollectionUtils.getListFirst(list);
-
-    //     // 如果用户不存在，跳过缓存
-    //     if (first == null) {
-    //         return null;
-    //     }
-
-    //     try {
-    //         jedisClient.hset(key, field, JsonUtils.objectToJson(first));
-    //     } catch (Exception e) {
-    //         log.error("缓存存储异常，错误位置：SysLoginServiceImpl.getByEmail()");
-    //     }
-
-    //     return first;
-    // }
 
     /**
      * 验证密码
