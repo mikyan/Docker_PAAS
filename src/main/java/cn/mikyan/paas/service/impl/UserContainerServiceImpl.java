@@ -264,11 +264,13 @@ public class UserContainerServiceImpl extends ServiceImpl<UserContainerMapper, U
         builder.image(image.getFullName());
         builder.tty(true);
 
-        builder.cmd("/etc/init.d/ssh start");
+        List<String> cmdList = Arrays.asList("/etc/init.d/ssh start");
         if(CollectionUtils.isNotArrayEmpty(cmd)) {
-            builder.cmd(cmd);
-            uc.setCommand(Arrays.toString(cmd));
+            cmdList.addAll(Arrays.asList(cmd));
         }
+        builder.cmd(cmdList);
+        uc.setCommand(cmdList.toString());
+
         if(CollectionUtils.isNotArrayEmpty(destination)) {
             builder.volumes(destination);
         }
