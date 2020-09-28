@@ -3,7 +3,9 @@ package cn.mikyan.paas.websocket;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * 输出线程
@@ -24,7 +26,7 @@ public class OutPutThread extends Thread {
     @Override
     public void run() {
         try{
-            byte[] bytes=new byte[1024];
+            /* byte[] bytes=new byte[1024];
             while(!this.isInterrupted()){
                 int n=inputStream.read(bytes);
 
@@ -37,6 +39,18 @@ public class OutPutThread extends Thread {
                 String msg=new String(bytes,0,n);
                 session.sendMessage(new TextMessage(msg));
                 bytes=new byte[1024];
+            } */
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+            String line=null; 
+            while((line = reader.readLine()) != null) {
+                System.out.println("---------");
+                System.out.println("in:"+line);
+                if(line.length()==0){
+                    session.sendMessage(new TextMessage("\n")); 
+                }else{
+                    session.sendMessage(new TextMessage(line));
+                }
             }
         }catch(Exception e){
             e.printStackTrace();
