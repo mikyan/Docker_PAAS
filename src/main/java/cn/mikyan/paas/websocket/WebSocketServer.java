@@ -3,7 +3,6 @@ package cn.mikyan.paas.websocket;
 import cn.mikyan.paas.utils.JsonUtils;
 import cn.mikyan.paas.utils.SpringBeanFactoryUtils;
 import cn.mikyan.paas.utils.StringUtils;
-import cn.mikyan.paas.utils.jedis.JedisClient;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,6 @@ import java.util.Map;
 @ServerEndpoint(value = "/ws/{userId}")
 @Component
 public class WebSocketServer {
-    @Autowired
-    private JedisClient jedisClient;
 
     private static HashMap<String, Session> webSocketSet = new HashMap<>();
 
@@ -42,29 +39,8 @@ public class WebSocketServer {
      */
     @OnOpen
     public void onOpen(Session session, @PathParam("userId") String userId) {
-        if (jedisClient == null) {
-            jedisClient = SpringBeanFactoryUtils.getBean(JedisClient.class);
-        }
-
         this.session = session;
         webSocketSet.put(session.getId(), session);
-        String field = ID_PREFIX + userId;
-        try {
-            String res = jedisClient.hget(key, field);
-            if (StringUtils.isNotBlank(res)) {
-                //如果有，则删除原来的sessionId
-                jedisClient.hdel(key, field);
-            }
-            //log.info("WebSocket连接建立成功，用户ID：{}", userId);
-        } catch (Exception e) {
-            //log.error("缓存读取异常，错误位置：{}", "WebSocketServer.onOpen()");
-        }
-
-        try {
-            jedisClient.hset(key, field, session.getId());
-        } catch (Exception e) {
-            //log.error("缓存存储异常，错误位置：{}", "WebSocketServer.onOpen()");
-        }
     }
 
     /**
@@ -73,17 +49,6 @@ public class WebSocketServer {
     @OnClose
     public void onClose(@PathParam("userId") String userId) {
         webSocketSet.remove(this.session.getId());
-        String field = ID_PREFIX + userId;
-        try {
-            String res = jedisClient.hget(key, field);
-            if (StringUtils.isNotBlank(res)) {
-                //如果有，则删除原来的sessionId
-                jedisClient.hdel(key, field);
-            }
-//            log.info("WebSocket连接关闭，用户ID：{}", userId);
-        } catch (Exception e) {
-            //log.error("缓存读取异常，错误位置：{}", "WebSocketServer.OnClose()");
-        }
     }
 
     /**

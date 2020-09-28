@@ -38,7 +38,7 @@ import cn.mikyan.paas.utils.HttpClientUtils;
 import cn.mikyan.paas.utils.JsonUtils;
 import cn.mikyan.paas.utils.ResultVOUtils;
 import cn.mikyan.paas.utils.StringUtils;
-import cn.mikyan.paas.utils.jedis.JedisClient;
+
 
 /**
  * <p>
@@ -52,9 +52,6 @@ import cn.mikyan.paas.utils.jedis.JedisClient;
 public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEntity> implements SysImageService {
 
     @Autowired
-    private JedisClient jedisClient;
-
-    @Autowired
     private DockerClient dockerClient;
 
     @Autowired
@@ -62,11 +59,6 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
 
     @Value("${docker.server.url}")
     private String serverUrl;
-
-    @Value("${redis.local-image.key}")
-    private String key;
-    private final String ID_PREFIX = "ID:";
-    private final String FULL_NAME_PREFIX = "FULL_NAME:";
 
     /**
      * 同步本地镜像到数据库
@@ -128,8 +120,6 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
                     deleteCount++;
                     SysImageEntity sysImage = dbImages.get(i);
                     sysImageMapper.deleteById(sysImage);
-                    // 更新缓存
-                    cleanCache(sysImage.getId(), sysImage.getFullName());
                 }
             }
 
@@ -144,21 +134,6 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
             return ResultVOUtils.error(ResultEnum.DOCKER_TIMEOUT);
         }  catch (Exception e) {
             return ResultVOUtils.error(ResultEnum.DOCKER_EXCEPTION);
-        }
-    }
-
-    @Override
-    public void cleanCache(String id, String fullName) {
-        try {
-            if (StringUtils.isNotBlank(id)) {
-                jedisClient.hdel(key, ID_PREFIX + id);
-            }
-            if (StringUtils.isNotBlank(fullName)) {
-                jedisClient.hdel(key, FULL_NAME_PREFIX + fullName);
-            }
-        } catch (Exception e) {
-            //log.error("清理本地镜像缓存失败，错误位置：{}，错误栈：{}",
-            //        "SysImageServiceImpl.cleanCache()", HttpClientUtils.getStackTraceAsString(e));
         }
     }
 
@@ -356,27 +331,10 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
 
     @Override
     public SysImageEntity getById(String id) {
-        String field = ID_PREFIX + id;
-
-        try {
-            String json = jedisClient.hget(key, field);
-            if(StringUtils.isNotBlank(json)) {
-                return JsonUtils.jsonToObject(json, SysImageEntity.class);
-            }
-        } catch (Exception e) {
-            log.error("缓存读取异常，异常位置：SysImageServiceImpl.getById()", e);
-        }
 
         SysImageEntity image = sysImageMapper.selectById(id);
         if(image == null) {
             return null;
-        }
-
-        try {
-            String json = JsonUtils.objectToJson(image);
-            jedisClient.hset(key, field, json);
-        } catch (Exception e) {
-            log.error("缓存存储异常，异常位置：SysImageServiceImpl.getById()", e);
         }
 
         return image;
@@ -384,28 +342,11 @@ public class SysImageServiceImpl extends ServiceImpl<SysImageMapper, SysImageEnt
 
     @Override
     public SysImageEntity getByFullName(String fullName) {
-        String field = FULL_NAME_PREFIX + fullName;
-
-        try {
-            String json = jedisClient.hget(key, field);
-            if(StringUtils.isNotBlank(json)) {
-                return JsonUtils.jsonToObject(json, SysImageEntity.class);
-            }
-        } catch (Exception e) {
-            log.error("缓存读取异常，异常位置：SysImageServiceImpl.getByFullName()", e);
-        }
 
         List<SysImageEntity> images = sysImageMapper.selectList(new QueryWrapper<SysImageEntity>().eq("full_name", fullName));
         SysImageEntity image = CollectionUtils.getListFirst(images);
         if(image == null) {
             return null;
-        }
-
-        try {
-            String json = JsonUtils.objectToJson(image);
-            jedisClient.hset(key, field, json);
-        } catch (Exception e) {
-            log.error("缓存存储异常，异常位置：SysImageServiceImpl.getByFullName()", e);
         }
 
         return image;

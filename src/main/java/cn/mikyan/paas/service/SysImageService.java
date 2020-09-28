@@ -32,6 +32,4 @@ public interface SysImageService extends IService<SysImageEntity> {
     SysImageEntity getByFullName(String id); 
 
     ResultVO sync();
-
-    void cleanCache(String id, String fullName);
 }
