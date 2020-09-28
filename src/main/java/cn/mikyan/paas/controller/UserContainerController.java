@@ -28,6 +28,7 @@ import cn.mikyan.paas.domain.dto.UserContainerDTO;
 import cn.mikyan.paas.domain.vo.ResultVO;
 import cn.mikyan.paas.service.UserContainerService;
 import cn.mikyan.paas.utils.CollectionUtils;
+import cn.mikyan.paas.utils.JsonUtils;
 import cn.mikyan.paas.utils.ResultVOUtils;
 import cn.mikyan.paas.utils.StringUtils;
 import cn.mikyan.paas.domain.entity.UserContainerEntity;
@@ -126,10 +127,11 @@ public class UserContainerController {
                                     String portMapStr, String cmdStr, String envStr, String destinationStr,
                                     String uid, HttpServletRequest request) {
         // 输入验证
-        if (StringUtils.isBlank(imageId, containerName, projectId)) {
+        if (StringUtils.isBlank(imageId, containerName)) {
             return ResultVOUtils.error(ResultEnum.PARAM_ERROR);
         }
-
+        
+        System.out.println(portMapStr);
         // 前端传递map字符串
         Map<String, String> portMap;
         try {
